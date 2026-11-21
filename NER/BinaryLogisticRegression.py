@@ -16,9 +16,9 @@ class BinaryLogisticRegression(object):
 
     #  ------------- Hyperparameters ------------------ #
 
-    LEARNING_RATE = 0.005  # The learning rate.
+    LEARNING_RATE = 0.01  # The learning rate.
     CONVERGENCE_MARGIN = 0.001  # The convergence criterion.
-    MAX_ITERATIONS = 100 # Maximal number of passes through the datapoints in stochastic gradient descent.
+    MAX_ITERATIONS = 10000 # Maximal number of passes through the datapoints in stochastic gradient descent.
     MINIBATCH_SIZE = 1000 # Minibatch size (only for minibatch gradient descent)
 
     # ----------------------------------------------------------------------
@@ -110,7 +110,13 @@ class BinaryLogisticRegression(object):
         (used for batch gradient descent).
         """
 
-        # YOUR CODE HERE
+        # Hämta alla gissningar alltså typ conditional_prob, skapar en lista, m lång, tar varje feature gånger varje theta och adderar dem, sedan sigmoid för ett värde mellan 0-1
+        guesses = self.sigmoid(np.dot(self.x, self.theta))
+
+        # Summera alla self.x * guess(sigma) - lösningen
+        self.gradient = np.dot(self.x.T, guesses - self.y) / self.DATAPOINTS
+
+
 
 
     def compute_gradient_minibatch(self, minibatch):
@@ -128,7 +134,19 @@ class BinaryLogisticRegression(object):
         (used for stochastic gradient descent).
         """
 
-        # YOUR CODE HERE
+        # Check if random word is a name or not using y
+
+        # multiply each weight with its maching feauture and add them together
+        # x_times_theta is also more commonly simply called z, its what we put in sigmoid function to get a probability between 0 and 1.
+        x_times_theta = np.dot(self.x[datapoint], self.theta)
+
+        #peform guess, this value is somewhere between 0 and 1, closer to 1 if model thinks there is a high probabilty for this word to be a name
+        guess = self.sigmoid(x_times_theta)
+        # Check if random word is a name or not using y
+        error = guess - self.y[datapoint]
+        # each feature gets multilied by error, if feature was not there for example not capitalized error gets multiplied and only affecting features values are nudged
+        self.gradient = self.x[datapoint] * error
+
 
 
     def stochastic_fit(self):
@@ -136,8 +154,20 @@ class BinaryLogisticRegression(object):
         Performs Stochastic Gradient Descent.
         """
         self.init_plot(self.FEATURES)
+        theta_change_total = float('inf')
+        # we cannot use previous while loop logic since if we randomly stump on easy word thats model gets almost 99% right we will got super low gradient and training will stop early
+        for i in range(self.MAX_ITERATIONS):
+            random_word_index = np.random.randint(0, self.DATAPOINTS)
+            self.compute_gradient(random_word_index)
+            self.theta = self.theta - self.LEARNING_RATE*self.gradient
 
-        # YOUR CODE HERE
+            # Euclidian distance of how much theta changes, close to 0 means we have converged, squared sum of all
+            theta_change_total = np.sum(self.gradient ** 2)
+
+            # Plot the loss 50 times iterations, we increased the max iterations cause it gave way to bad results
+            if i % (self.MAX_ITERATIONS / 50) == 0:
+                self.update_plot(self.loss(self.x, self.y))
+
 
 
     def minibatch_fit(self):
@@ -158,23 +188,17 @@ class BinaryLogisticRegression(object):
         # While we are above the margin
         theta_change_total = float('inf')
         while theta_change_total > self.CONVERGENCE_MARGIN:
-            # The gradient list gradient[k] är hur mycket vikten ska ändras, måste resetas för att inte stacka
-            self.gradient = [0, 0, 0]
 
-            # Hämta alla gissningar alltså typ conditional_prob, skapar en lista, m lång
-            guesses = self.sigmoid(np.dot(self.x, self.theta))
-
-            # Summera alla self.x * guess(sigma) - lösningen
-            self.gradient = np.dot(self.x.T, guesses - self.y) / self.DATAPOINTS
+            self.compute_gradient_for_all() # compute gradient.
 
             # Uppdatera alla vikter efter varje gradient, inget 0 problem
             self.theta = self.theta - self.LEARNING_RATE*self.gradient
 
-            # Euclidian distance of how much theta changes, close to 0 means we have converged
-            theta_change_total = self.gradient[0]**2 + self.gradient[1]**2 + self.gradient[2]**2
+            # Euclidian distance of how much theta changes, close to 0 means we have converged, squared sum of all
+            theta_change_total = np.sum(self.gradient ** 2)
 
             # Plot the loss
-            # self.update_plot(self.loss(self.x, self.y))
+            self.update_plot(self.loss(self.x, self.y))
 
 
     def classify_datapoints(self, test_data, test_labels):
