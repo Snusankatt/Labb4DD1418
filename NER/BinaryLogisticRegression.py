@@ -16,9 +16,9 @@ class BinaryLogisticRegression(object):
 
     #  ------------- Hyperparameters ------------------ #
 
-    LEARNING_RATE = 0.01  # The learning rate.
+    LEARNING_RATE = 0.1  # The learning rate.
     CONVERGENCE_MARGIN = 0.001  # The convergence criterion.
-    MAX_ITERATIONS = 10000 # Maximal number of passes through the datapoints in stochastic gradient descent.
+    MAX_ITERATIONS = 1000 # Maximal number of passes through the datapoints in stochastic gradient descent.
     MINIBATCH_SIZE = 1000 # Minibatch size (only for minibatch gradient descent)
 
     # ----------------------------------------------------------------------
@@ -124,8 +124,12 @@ class BinaryLogisticRegression(object):
         Computes the gradient based on a minibatch
         (used for minibatch gradient descent).
         """
-        
-        # YOUR CODE HERE
+
+        # exakt samma som compute all men som tur använder vi numpy som så vi kan bara lägga in en lista som parameter till en 2d matris och få ut exakt de radernas värden,
+        guesses = self.sigmoid(np.dot(self.x[minibatch], self.theta))
+
+        # Summera alla self.x[minibatch] * (guess(sigma) - lösningen) sedan dela med antalet element vi har kollat för istället för alla som i compute all
+        self.gradient = np.dot(self.x[minibatch].T, guesses - self.y[minibatch]) / len(minibatch)
 
 
     def compute_gradient(self, datapoint):
@@ -176,7 +180,26 @@ class BinaryLogisticRegression(object):
         """
         self.init_plot(self.FEATURES)
 
-        # YOUR CODE HERE
+
+        theta_change_total = float('inf') # initalize variable
+        while theta_change_total > self.CONVERGENCE_MARGIN:
+
+            # create a minibatch of random indexes of words
+            minibatch = np.random.randint(0,self.DATAPOINTS,self.MINIBATCH_SIZE)
+
+            # get our self.gradient based on minibatrch
+            self.compute_gradient_minibatch(minibatch)
+
+            # Uppdatera alla vikter efter varje gradient, inget 0 problem
+            self.theta = self.theta - self.LEARNING_RATE * self.gradient
+
+            # Euclidian distance of how much theta changes, close to 0 means we have converged, squared sum of all
+            theta_change_total = np.sum(self.gradient ** 2)
+
+            # Plot the loss
+            self.update_plot(self.loss(self.x, self.y))
+
+
 
 
     def fit(self):
