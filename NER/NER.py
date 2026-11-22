@@ -55,6 +55,13 @@ class NER(object):
     def first_token_in_sentence(self):
            return self.last_token in [None, '.', '!', '?']
 
+    # added feature if token is fully in caps like USA, FBI and so forth. added length > 1 to not include "I" or "A" like A elephant or I like
+    #Comment in if you want extra parameter
+    #def all_caps(self):
+        #return True if (self.current_token != None and self.current_token.isupper() and len(self.current_token) > 1) else False
+
+    # try theory that if is las token is not first, basically if caps and not first, in middle of sentence as weight
+
     class FeatureFunction(object):
         def __init__(self, func):
             self.func = func
@@ -130,6 +137,8 @@ class NER(object):
         self.features = [
             NER.FeatureFunction(self.capitalized_token),
             NER.FeatureFunction(self.first_token_in_sentence),
+            # Extra feature can be commented in
+            #NER.FeatureFunction(self.all_caps),
         ]
 
         if training_file:
