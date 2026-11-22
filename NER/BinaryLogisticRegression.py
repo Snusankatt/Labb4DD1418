@@ -16,7 +16,7 @@ class BinaryLogisticRegression(object):
 
     #  ------------- Hyperparameters ------------------ #
 
-    LEARNING_RATE = 0.1  # The learning rate.
+    LEARNING_RATE = 0.5  # The learning rate.
     CONVERGENCE_MARGIN = 0.001  # The convergence criterion.
     MAX_ITERATIONS = 1000 # Maximal number of passes through the datapoints in stochastic gradient descent.
     MINIBATCH_SIZE = 1000 # Minibatch size (only for minibatch gradient descent)
@@ -253,6 +253,23 @@ class BinaryLogisticRegression(object):
                 print('                 {:2d} '.format(i), end='')
             print(' '.join('{:>8.3f}'.format(confusion[i][j]) for j in range(2)))
 
+        # print accuracy results variable name/noname means what model predicted, correct or incorrect means if it was right or not.
+        amount_nonames_correct = confusion[0][0] # often like 80k, represents where model predicted 0 and it was infact 0
+        amount_nonames_incorrect = confusion[0][1]  # when it predicted 0 but it was 1, so a name
+        amount_names_correct = confusion[1][1]
+        amount_names_incorrect = confusion[1][0]
+
+        # how right it was when it predicted 0, that it was not a name
+        no_name_accuracy = amount_nonames_correct / (amount_nonames_correct + amount_nonames_incorrect)
+        # how right it was when it predicted 1, that it was a name
+        name_accuarcy = amount_names_correct / (amount_names_correct + amount_names_incorrect)
+        total_accuarcy = (amount_nonames_correct + amount_names_correct) / (amount_names_incorrect + amount_nonames_incorrect + amount_names_correct + amount_nonames_correct)
+
+        print("") # create space from confusion matrix inprint
+        print("Model Accuracy Tests")
+        print(f"No-Name Accuracy: {no_name_accuracy:.2%}")
+        print(f"Name Accuracy: {name_accuarcy:.2%}")
+        print(f"Total Accuracy: {total_accuarcy:.2%}")
 
     def print_result(self):
         print(' '.join(['{:.2f}'.format(x) for x in self.theta]))
