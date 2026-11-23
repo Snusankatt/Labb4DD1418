@@ -56,11 +56,18 @@ class NER(object):
            return self.last_token in [None, '.', '!', '?']
 
     # added feature if token is fully in caps like USA, FBI and so forth. added length > 1 to not include "I" or "A" like A elephant or I like
-    #Comment in if you want extra parameter
-    #def all_caps(self):
-        #return True if (self.current_token != None and self.current_token.isupper() and len(self.current_token) > 1) else False
+    def all_caps(self):
+        return True if (self.current_token != None and self.current_token.isupper() and len(self.current_token) > 1) else False
 
     # try theory that if is las token is not first, basically if caps and not first, in middle of sentence as weight
+    # huge impact like 20% more correct finds for names
+    def capitalized_in_middle_of_sentence(self): # for example There was once a man named Victor that liked .... // realized that need to have "or self.allcaps" otherwise a acronym like FBI in middle of sentence would produce 0
+        return True if (self.current_token != None and (self.capitalized_token() or self.all_caps()) and not self.first_token_in_sentence()) else False
+
+    # if previous token was capitalized it usually means next is, if you look at training corpus so much of it is like "There was a letter from the Britsh Nuclear Agency"
+    def previous_token_was_capitalized_but_wasnt_first_word(self):
+        return True if (self.capitalized_in_middle_of_sentence() and self.last_token.istitle()) else False
+
 
     class FeatureFunction(object):
         def __init__(self, func):
@@ -137,8 +144,10 @@ class NER(object):
         self.features = [
             NER.FeatureFunction(self.capitalized_token),
             NER.FeatureFunction(self.first_token_in_sentence),
-            # Extra feature can be commented in
-            #NER.FeatureFunction(self.all_caps),
+            # Extra features can be commented in
+            NER.FeatureFunction(self.all_caps),
+            NER.FeatureFunction(self.capitalized_in_middle_of_sentence),
+            NER.FeatureFunction(self.previous_token_was_capitalized_but_wasnt_first_word),
         ]
 
         if training_file:

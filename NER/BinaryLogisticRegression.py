@@ -16,9 +16,9 @@ class BinaryLogisticRegression(object):
 
     #  ------------- Hyperparameters ------------------ #
 
-    LEARNING_RATE = 0.5  # The learning rate.
+    LEARNING_RATE = 0.2  # The learning rate.
     CONVERGENCE_MARGIN = 0.001  # The convergence criterion.
-    MAX_ITERATIONS = 1000 # Maximal number of passes through the datapoints in stochastic gradient descent.
+    MAX_ITERATIONS = 10000 # Maximal number of passes through the datapoints in stochastic gradient descent.
     MINIBATCH_SIZE = 1000 # Minibatch size (only for minibatch gradient descent)
 
     # ----------------------------------------------------------------------
@@ -261,14 +261,27 @@ class BinaryLogisticRegression(object):
 
         # how right it was when it predicted 0, that it was not a name
         no_name_accuracy = amount_nonames_correct / (amount_nonames_correct + amount_nonames_incorrect)
+        no_name_recall = amount_nonames_correct / (amount_nonames_correct + amount_names_incorrect)
         # how right it was when it predicted 1, that it was a name
         name_accuarcy = amount_names_correct / (amount_names_correct + amount_names_incorrect)
+        name_recall = amount_names_correct / (amount_names_correct + amount_nonames_incorrect)
         total_accuarcy = (amount_nonames_correct + amount_names_correct) / (amount_names_incorrect + amount_nonames_incorrect + amount_names_correct + amount_nonames_correct)
+
 
         print("") # create space from confusion matrix inprint
         print("Model Accuracy Tests")
-        print(f"No-Name Accuracy: {no_name_accuracy:.2%}")
-        print(f"Name Accuracy: {name_accuarcy:.2%}")
+
+        # how often it is right whenever it belives something is not a name
+        print(f"No-Name Precision: {no_name_accuracy:.2%}")
+
+        # how many % of all the no-names did it find out of all no-names that were in the text
+        print(f"No-Name Recall: {no_name_recall:.2%}")
+
+        # how often it is right whenever it belives something is a name
+        print(f"Name Precision: {name_accuarcy:.2%}")
+
+        # how many % of all names did it find out of all the names that were in the text
+        print(f"Name Recall: {name_recall:.2%}")
         print(f"Total Accuracy: {total_accuarcy:.2%}")
 
     def print_result(self):
